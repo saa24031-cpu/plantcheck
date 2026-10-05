@@ -4,89 +4,133 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>plantcheck - 作物生育記録アプリ</title>
-  <!-- Tailwind CSS (デザイン用) -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js (グラフ用) -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-emerald-50 min-h-screen text-slate-800 p-4 md:p-8">
   <div class="max-w-4xl mx-auto space-y-6">
-    <header class="text-center py-4">
-      <h1 class="text-3xl font-bold text-emerald-700">🌱 plantcheck</h1>
-      <p class="text-sm text-slate-600 mt-1">作物の生育記録管理システム</p>
+    
+    <!-- ヘッダー -->
+    <header class="flex justify-between items-center py-4 border-b border-emerald-200">
+      <div>
+        <h1 class="text-3xl font-bold text-emerald-700">🌱 plantcheck</h1>
+        <p class="text-xs text-slate-600 mt-1">作物の生育記録管理システム</p>
+      </div>
+      <!-- ログイン時のユーザー情報 & ログアウトボタン -->
+      <div id="user-status" class="hidden flex items-center gap-3">
+        <span id="user-email" class="text-xs font-medium text-slate-600 bg-white px-3 py-1.5 rounded-full shadow-sm border"></span>
+        <button id="btn-logout" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1.5 px-3 rounded-lg transition">
+          ログアウト
+        </button>
+      </div>
     </header>
 
     <!-- エラーメッセージ表示エリア -->
     <div id="error-msg" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm"></div>
 
-    <!-- 入力フォームエリア -->
-    <div class="bg-white p-6 rounded-xl shadow-md border border-emerald-100">
-      <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2">新規記録の登録</h2>
-      <form id="plant-form" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">作物名 <span class="text-red-500">*</span></label>
-            <input type="text" id="name" placeholder="例: トマト" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+    <!-- ---------------------------------------------------------------- border -->
+    <!-- 1. 認証フォーム（未ログイン時に表示） -->
+    <!-- ---------------------------------------------------------------- -->
+    <div id="auth-section" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md border border-emerald-100 space-y-4">
+      <h2 id="auth-title" class="text-xl font-bold text-slate-700 border-b pb-2">ログイン</h2>
+      
+      <form id="auth-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">メールアドレス</label>
+          <input type="email" id="auth-email" required placeholder="example@email.com" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">パスワード (6文字以上)</label>
+          <input type="password" id="auth-password" required minlength="6" placeholder="******" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+        </div>
+        
+        <button type="submit" id="btn-auth-submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition">
+          ログイン
+        </button>
+      </form>
+
+      <div class="text-center pt-2">
+        <button id="btn-toggle-auth" class="text-xs text-emerald-600 hover:underline">
+          アカウントをお持ちでない方はこちら（新規登録）
+        </button>
+      </div>
+    </div>
+
+    <!-- ---------------------------------------------------------------- border -->
+    <!-- 2. アプリ本体（ログイン時に表示） -->
+    <!-- ---------------------------------------------------------------- -->
+    <div id="app-section" class="hidden space-y-6">
+      
+      <!-- 入力フォームエリア -->
+      <div class="bg-white p-6 rounded-xl shadow-md border border-emerald-100">
+        <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2">新規記録の登録</h2>
+        <form id="plant-form" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">作物名 <span class="text-red-500">*</span></label>
+              <input type="text" id="name" placeholder="例: トマト" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">日付 <span class="text-red-500">*</span></label>
+              <input type="date" id="date" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">葉枚数 (枚) <span class="text-red-500">*</span></label>
+              <input type="number" id="leaves" min="0" placeholder="例: 5" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">草丈 (cm) <span class="text-red-500">*</span></label>
+              <input type="number" step="0.1" id="height" min="0" placeholder="例: 12.5" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">日付 <span class="text-red-500">*</span></label>
-            <input type="date" id="date" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+            <label class="block text-sm font-medium mb-1">メモ</label>
+            <textarea id="memo" rows="3" placeholder="天候や気づいたことなど" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
           </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">葉枚数 (枚) <span class="text-red-500">*</span></label>
-            <input type="number" id="leaves" min="0" placeholder="例: 5" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">草丈 (cm) <span class="text-red-500">*</span></label>
-            <input type="number" step="0.1" id="height" min="0" placeholder="例: 12.5" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition">
+            保存する
+          </button>
+        </form>
+      </div>
+
+      <!-- 絞り込み & グラフ表示エリア -->
+      <div class="bg-white p-6 rounded-xl shadow-md border border-emerald-100 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
+          <h2 class="text-xl font-bold text-slate-700">生育データの推移</h2>
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium whitespace-nowrap">作物で絞り込み:</label>
+            <select id="filter-name" class="border rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <option value="ALL">すべて表示</option>
+            </select>
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">メモ</label>
-          <textarea id="memo" rows="3" placeholder="天候や気づいたことなど" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
-        </div>
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-          保存する
-        </button>
-      </form>
-    </div>
-
-    <!-- 絞り込み & グラフ表示エリア -->
-    <div class="bg-white p-6 rounded-xl shadow-md border border-emerald-100 space-y-4">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
-        <h2 class="text-xl font-bold text-slate-700">生育データの推移</h2>
-        <div class="flex items-center gap-2">
-          <label class="text-sm font-medium whitespace-nowrap">作物で絞り込み:</label>
-          <select id="filter-name" class="border rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            <option value="ALL">すべて表示</option>
-          </select>
+          <canvas id="growthChart" class="w-full max-h-64"></canvas>
         </div>
       </div>
-      <div>
-        <canvas id="growthChart" class="w-full max-h-64"></canvas>
-      </div>
-    </div>
 
-    <!-- データ一覧表示エリア -->
-    <div class="bg-white p-6 rounded-xl shadow-md border border-emerald-100">
-      <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2">記録一覧 (新しい順)</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-emerald-50 text-emerald-800 text-sm">
-              <th class="p-3">日付</th>
-              <th class="p-3">作物名</th>
-              <th class="p-3">葉枚数</th>
-              <th class="p-3">草丈</th>
-              <th class="p-3">メモ</th>
-              <th class="p-3 text-center">操作</th>
-            </tr>
-          </thead>
-          <tbody id="record-list" class="divide-y text-sm">
-            <!-- JavaScriptでここにデータが挿入されます -->
-          </tbody>
-        </table>
+      <!-- データ一覧表示エリア -->
+      <div class="bg-white p-6 rounded-xl shadow-md border border-emerald-100">
+        <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2">記録一覧 (新しい順)</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-emerald-50 text-emerald-800 text-sm">
+                <th class="p-3">日付</th>
+                <th class="p-3">作物名</th>
+                <th class="p-3">葉枚数</th>
+                <th class="p-3">草丈</th>
+                <th class="p-3">メモ</th>
+                <th class="p-3 text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody id="record-list" class="divide-y text-sm"></tbody>
+          </table>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -94,10 +138,17 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
-      getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { 
+      getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, where 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // 🔑 ★手順2でFirebaseコンソールから取得した設定値に書き換えてください★
+    // 🔑 ★Firebaseの設定情報を貼り付けてください★
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -109,19 +160,85 @@
 
     // Firebase 初期化
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getFirestore(app);
     const recordsCol = collection(db, "records");
 
+    let currentUser = null;
+    let isSignUpMode = false;
     let allRecords = [];
     let chartInstance = null;
 
-    // 初期化処理
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('date').valueAsDate = new Date();
-      loadRecords();
+    // ----------------------------------------------------------------
+    // 認証ロジック & UI切り替え
+    // ----------------------------------------------------------------
+    
+    // ログイン状態の監視
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      showError('');
+
+      if (user) {
+        // ログイン時
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('app-section').classList.remove('hidden');
+        document.getElementById('user-status').classList.remove('hidden');
+        document.getElementById('user-email').textContent = user.email;
+        
+        document.getElementById('date').valueAsDate = new Date();
+        loadRecords();
+      } else {
+        // 未ログイン時
+        document.getElementById('auth-section').classList.remove('hidden');
+        document.getElementById('app-section').classList.add('hidden');
+        document.getElementById('user-status').classList.add('hidden');
+      }
     });
 
-    // エラー表示ヘルパー
+    // ログイン / 新規登録の表示切り替え
+    const btnToggleAuth = document.getElementById('btn-toggle-auth');
+    btnToggleAuth.addEventListener('click', () => {
+      isSignUpMode = !isSignUpMode;
+      document.getElementById('auth-title').textContent = isSignUpMode ? 'アカウント新規登録' : 'ログイン';
+      document.getElementById('btn-auth-submit').textContent = isSignUpMode ? '新規登録する' : 'ログイン';
+      btnToggleAuth.textContent = isSignUpMode 
+        ? '既にアカウントをお持ちの方はこちら（ログイン）' 
+        : 'アカウントをお持ちでない方はこちら（新規登録）';
+      showError('');
+    });
+
+    // 認証フォーム送信 (ログイン / 新規登録)
+    document.getElementById('auth-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showError('');
+
+      const email = document.getElementById('auth-email').value;
+      const password = document.getElementById('auth-password').value;
+
+      try {
+        if (isSignUpMode) {
+          await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (err) {
+        let msg = '認証エラーが発生しました。';
+        if (err.code === 'auth/invalid-credential') msg = 'メールアドレスまたはパスワードが正しくありません。';
+        if (err.code === 'auth/email-already-in-use') msg = 'このメールアドレスは既に登録されています。';
+        if (err.code === 'auth/weak-password') msg = 'パスワードは6文字以上で設定してください。';
+        showError(msg);
+      }
+    });
+
+    // ログアウト
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      signOut(auth);
+    });
+
+    // ----------------------------------------------------------------
+    // アプリ機能（Firestore連携）
+    // ----------------------------------------------------------------
+
     function showError(msg) {
       const errBox = document.getElementById('error-msg');
       if (msg) {
@@ -132,7 +249,7 @@
       }
     }
 
-    // データ保存
+    // データ保存（ログイン中のユーザーIDを付与）
     document.getElementById('plant-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       showError('');
@@ -143,18 +260,14 @@
       const height = document.getElementById('height').value;
       const memo = document.getElementById('memo').value.trim();
 
-      // バリデーション (未入力・数値チェック)
       if (!name || !date || leaves === '' || height === '') {
         showError('必須項目（作物名、日付、葉枚数、草丈）をすべて入力してください。');
-        return;
-      }
-      if (Number(leaves) < 0 || Number(height) < 0) {
-        showError('葉枚数および草丈には0以上の数値を指定してください。');
         return;
       }
 
       try {
         await addDoc(recordsCol, {
+          uid: currentUser.uid, // ログインユーザーのIDを保存
           name,
           date,
           leaves: Number(leaves),
@@ -163,7 +276,6 @@
           createdAt: new Date()
         });
 
-        // フォームリセット
         document.getElementById('name').value = '';
         document.getElementById('leaves').value = '';
         document.getElementById('height').value = '';
@@ -176,10 +288,16 @@
       }
     });
 
-    // データ読み込み & 表示
+    // データ読み込み（ログインユーザーのデータのみ取得）
     async function loadRecords() {
+      if (!currentUser) return;
       try {
-        const q = query(recordsCol, orderBy('date', 'desc'));
+        // ログイン中ユーザーのデータのみを日付降順で取得
+        const q = query(
+          recordsCol, 
+          where('uid', '==', currentUser.uid),
+          orderBy('date', 'desc')
+        );
         const querySnapshot = await getDocs(q);
         
         allRecords = [];
@@ -194,7 +312,6 @@
       }
     }
 
-    // フィルタ用のドロップダウン更新
     function updateFilterOptions() {
       const filterSelect = document.getElementById('filter-name');
       const currentVal = filterSelect.value;
@@ -210,17 +327,14 @@
       filterSelect.value = names.includes(currentVal) ? currentVal : 'ALL';
     }
 
-    // フィルタ変更イベント
     document.getElementById('filter-name').addEventListener('change', renderTableAndChart);
 
-    // テーブルとグラフの描画
     function renderTableAndChart() {
       const selectedName = document.getElementById('filter-name').value;
       const filtered = selectedName === 'ALL' 
         ? allRecords 
         : allRecords.filter(r => r.name === selectedName);
 
-      // テーブル表示
       const tbody = document.getElementById('record-list');
       tbody.innerHTML = '';
 
@@ -243,7 +357,6 @@
           tbody.appendChild(tr);
         });
 
-        // 削除ボタンイベント
         document.querySelectorAll('.btn-delete').forEach(btn => {
           btn.addEventListener('click', async (e) => {
             const id = e.target.getAttribute('data-id');
@@ -255,7 +368,7 @@
         });
       }
 
-      // グラフ表示 (日付順に昇順ソートして表示)
+      // グラフ描画
       const chartData = [...filtered].sort((a, b) => new Date(a.date) - new Date(b.date));
       const labels = chartData.map(r => `${r.date} (${r.name})`);
       const heights = chartData.map(r => r.height);
